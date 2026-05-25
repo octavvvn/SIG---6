@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berita Terkini</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0d0d0d; color: #f0ede6; font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+        header { padding: 2rem 2.5rem 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #1e1e1e; }
+        .logo { font-family: 'DM Serif Display', serif; font-size: 2rem; letter-spacing: -0.02em; }
+        .logo span { color: #e8c547; }
+        .meta { font-size: 0.68rem; color: #555; text-align: right; line-height: 1.6; letter-spacing: 0.06em; }
+        nav { padding: 0.75rem 2.5rem; border-bottom: 1px solid #1a1a1a; display: flex; gap: 1.8rem; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        nav a { color: #555; text-decoration: none; transition: color 0.2s; }
+        nav a.on { color: #e8c547; }
+        nav a:hover { color: #f0ede6; }
+        main { max-width: 960px; margin: 0 auto; padding: 3rem 2.5rem; }
+        .hero { margin-bottom: 3.5rem; opacity: 0; animation: up 0.7s ease forwards; }
+        .tag { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.15em; color: #e8c547; margin-bottom: 0.8rem; }
+        .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1rem; max-width: 700px; }
+        .hero p { font-size: 0.95rem; line-height: 1.7; color: #888; max-width: 580px; }
+        .byline { font-size: 0.68rem; color: #444; margin-top: 1rem; letter-spacing: 0.06em; }
+        hr { border: none; border-top: 1px solid #1e1e1e; margin: 0 0 2.5rem; }
+        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 3.5rem; }
+        .card { opacity: 0; animation: up 0.6s ease forwards; }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card .tag { margin-bottom: 0.5rem; }
+        .card h2 { font-family: 'DM Serif Display', serif; font-size: 1.05rem; line-height: 1.4; margin-bottom: 0.5rem; cursor: pointer; transition: color 0.2s; }
+        .card h2:hover { color: #e8c547; }
+        .card p { font-size: 0.8rem; color: #555; line-height: 1.6; }
+        .list-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.15em; color: #333; margin-bottom: 1rem; }
+        .list { list-style: none; }
+        .list li { display: flex; align-items: baseline; gap: 1rem; padding: 0.9rem 0; border-bottom: 1px solid #161616; opacity: 0; animation: up 0.5s ease forwards; cursor: pointer; }
+        .list li:nth-child(1) { animation-delay: 0.15s; }
+        .list li:nth-child(2) { animation-delay: 0.25s; }
+        .list li:nth-child(3) { animation-delay: 0.35s; }
+        .list li:nth-child(4) { animation-delay: 0.45s; }
+        .list li:hover .li-title { color: #e8c547; }
+        .li-num { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: #1e1e1e; min-width: 2rem; }
+        .li-title { font-size: 0.875rem; line-height: 1.4; transition: color 0.2s; }
+        .li-meta { font-size: 0.65rem; color: #3a3a3a; margin-top: 0.2rem; }
+        footer { border-top: 1px solid #1a1a1a; padding: 1.5rem 2.5rem; font-size: 0.65rem; color: #333; text-align: center; letter-spacing: 0.08em; text-transform: uppercase; }
+        @keyframes up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 640px) { .cards { grid-template-columns: 1fr; gap: 1.5rem; } header { flex-direction: column; align-items: flex-start; gap: 0.5rem; } .meta { text-align: left; } }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">berita<span>.</span></div>
+    <div class="meta">Rabu, 14 Mei 2026<br>Jakarta · 31°C</div>
+</header>
+<nav>
+    <a href="#" class="on">Utama</a>
+    <a href="#">Nasional</a>
+    <a href="#">Ekonomi</a>
+    <a href="#">Teknologi</a>
+    <a href="#">Dunia</a>
+</nav>
+<main>
+    <section class="hero">
+        <div class="tag">▸ Laporan Utama</div>
+        <h1>Pemerintah Percepat Transisi Energi Terbarukan di 2026</h1>
+        <p>15 pembangkit listrik tenaga surya akan dibangun di seluruh Indonesia. Investasi Rp 180 triliun ditargetkan rampung sebelum akhir tahun sebagai bagian dari komitmen net-zero 2060.</p>
+        <div class="byline">Rani Kusuma · 2 jam lalu</div>
+    </section>
+    <hr>
+    <section class="cards">
+        <article class="card">
+            <div class="tag">Ekonomi</div>
+            <h2>Rupiah Menguat ke Level Terkuat 8 Bulan</h2>
+            <p>Nilai tukar menyentuh Rp 15.420 per dolar, didorong data inflasi yang lebih rendah dari ekspektasi pasar.</p>
+            <div class="byline" style="margin-top:0.6rem">1 jam lalu</div>
+        </article>
+        <article class="card">
+            <div class="tag">Teknologi</div>
+            <h2>Startup AI Lokal Raih Pendanaan Rp 500 Miliar</h2>
+            <p>Platform kecerdasan buatan berbahasa Indonesia asal Bandung menarik investor dari Singapura dan Jepang.</p>
+            <div class="byline" style="margin-top:0.6rem">3 jam lalu</div>
+        </article>
+        <article class="card">
+            <div class="tag">Nasional</div>
+            <h2>Program MBG Diperluas ke 500 Sekolah Baru</h2>
+            <p>Kemendikbud konfirmasi perluasan ke wilayah 3T mulai bulan depan sebagai prioritas kabinet.</p>
+            <div class="byline" style="margin-top:0.6rem">4 jam lalu</div>
+        </article>
+    </section>
+    <hr>
+    <div class="list-title">Populer hari ini</div>
+    <ul class="list">
+        <li><span class="li-num">01</span><div><div class="li-title">KPK Tetapkan Tersangka Baru Kasus Korupsi Infrastruktur</div><div class="li-meta">Hukum · 5 jam lalu</div></div></li>
+        <li><span class="li-num">02</span><div><div class="li-title">Timnas Indonesia Lolos ke Final Piala AFF 2026</div><div class="li-meta">Olahraga · 7 jam lalu</div></div></li>
+        <li><span class="li-num">03</span><div><div class="li-title">Gempa M 5,4 Guncang Maluku, Tidak Berpotensi Tsunami</div><div class="li-meta">Bencana · 9 jam lalu</div></div></li>
+        <li><span class="li-num">04</span><div><div class="li-title">Harga Beras Turun Jelang Panen Raya Juni</div><div class="li-meta">Ekonomi · 10 jam lalu</div></div></li>
+    </ul>
+</main>
+<footer>© 2026 berita. — semua hak dilindungi</footer>
+</body>
+</html>

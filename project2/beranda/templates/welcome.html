@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GempaBumi — Edukasi Kebencanaan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      crossorigin=""
+    ></script>
+
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --c: #5b6cff;
+        --c-dim: rgba(91, 108, 255, 0.12);
+        --c-dim2: rgba(91, 108, 255, 0.06);
+
+        --teal: #14b8a6;
+        --amber: #f59e0b;
+
+        --bg: #f5f7fb;
+        --bg2: #eceff5;
+        --bg3: #dde3ee;
+
+        --surface: #ffffff;
+
+        --text: #111827;
+        --text2: #4b5563;
+        --text3: #94a3b8;
+
+        --border: rgba(17, 24, 39, 0.08);
+        --border2: rgba(17, 24, 39, 0.04);
+
+        --nav-h: 58px;
+        --r: 10px;
+        --r-lg: 16px;
+      }
+
+      [data-theme="dark"] {
+        --bg: #0f172a;
+        --bg2: #131d33;
+        --bg3: #1c2942;
+
+        --surface: #162033;
+
+        --text: #f8fafc;
+        --text2: #cbd5e1;
+        --text3: #64748b;
+
+        --border: rgba(248, 250, 252, 0.08);
+        --border2: rgba(248, 250, 252, 0.04);
+
+        --c-dim: rgba(91, 108, 255, 0.18);
+        --c-dim2: rgba(91, 108, 255, 0.08);
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        transition:
+          background 0.35s,
+          color 0.35s;
+      }
+
+      /* ── NAV ─────────────────────────────────────────────── */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        height: var(--nav-h);
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        transition:
+          background 0.35s,
+          border-color 0.35s;
+      }
+      .nav-brand {
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-brand-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--c);
+        flex-shrink: 0;
+        animation: livePulse 2.5s ease-in-out infinite;
+      }
+      @keyframes livePulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.45;
+          transform: scale(1.6);
+        }
+      }
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+      .nav-links {
+        display: flex;
+        gap: 1.25rem;
+        list-style: none;
+      }
+      .nav-links a {
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        color: var(--text2);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: var(--text);
+      }
+
+      /* ── THEME TOGGLE ───────────────────────────────────── */
+      .theme-toggle {
+        width: 40px;
+        height: 22px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        cursor: pointer;
+        position: relative;
+        transition:
+          background 0.3s,
+          border-color 0.3s;
+        flex-shrink: 0;
+      }
+      .theme-toggle::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--c);
+        transition:
+          transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          background 0.3s;
+      }
+      [data-theme="dark"] .theme-toggle::after {
+        transform: translateX(18px);
+      }
+      .theme-icon {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 9px;
+        pointer-events: none;
+        line-height: 1;
+      }
+      .theme-icon-sun {
+        left: 5px;
+      }
+      .theme-icon-moon {
+        right: 5px;
+      }
+
+      /* ── HERO ────────────────────────────────────────────── */
+      .hero {
+        padding: 5rem 2rem 4rem;
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: center;
+      }
+
+      .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--c);
+        font-weight: 400;
+        margin-bottom: 1.5rem;
+      }
+      .hero-eyebrow span {
+        color: var(--text3);
+      }
+
+      .hero h1 {
+        font-size: 68px;
+        font-weight: 800;
+        line-height: 0.9;
+        letter-spacing: -0.03em;
+        margin-bottom: 1.5rem;
+      }
+      .hero h1 .em {
+        color: var(--c);
+        font-style: italic;
+        font-family: "Playfair Display", serif;
+        font-weight: 400;
+        font-size: 0.9em;
+      }
+
+      .hero-body {
+        font-family: "Poppins", sans-serif;
+        font-size: 13px;
+        line-height: 1.9;
+        color: var(--text2);
+        margin-bottom: 2rem;
+      }
+
+      .cta-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.65rem 1.3rem;
+        border-radius: var(--r);
+        font-family: "Poppins", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          opacity 0.2s,
+          transform 0.15s,
+          background 0.2s;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #5b6cff, #7c4dff);
+        color: #fff;
+        border: none;
+        box-shadow: 0 10px 25px rgba(91, 108, 255, 0.25);
+      }
+      .btn-primary:hover {
+        opacity: 0.85;
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text2);
+        border: 1px solid var(--border);
+      }
+      .feature-card,
+      .stat-row,
+      .btn,
+      #map {
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease,
+          border-color 0.25s ease,
+          background 0.35s;
+      }
+      .btn-ghost:hover {
+        background: var(--bg2);
+        color: var(--text);
+      }
+
+      /* ── HERO STAT STRIP ─────────────────────────────────── */
+      .hero-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+      .stat-row {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1.1rem 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition:
+          background 0.35s,
+          border-color 0.35s;
+      }
+      .stat-row:hover {
+        border-color: var(--c);
+      }
+      .stat-label {
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text3);
+      }
+      .stat-val {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--text);
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+      }
+      .stat-val small {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text3);
+        letter-spacing: 0;
+      }
+      .stat-badge {
+        font-family: "Poppins", sans-serif;
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 20px;
+        border: 1px solid;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .badge-red {
+        color: var(--c);
+        border-color: var(--c);
+        background: var(--c-dim);
+      }
+      .badge-amber {
+        color: var(--amber);
+        border-color: var(--amber);
+        background: rgba(196, 138, 18, 0.1);
+      }
+      .badge-teal {
+        color: var(--teal);
+        border-color: var(--teal);
+        background: rgba(14, 140, 100, 0.1);
+      }
+
+      /* ── DIVIDER ─────────────────────────────────────────── */
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        max-width: 1100px;
+        margin: 0 auto;
+        width: calc(100% - 4rem);
+      }
+
+      /* ── FEATURES ─────────────────────────────────────────── */
+      .features-section {
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 3rem 2rem;
+      }
+      .section-eyebrow {
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text3);
+        font-weight: 400;
+        margin-bottom: 1.5rem;
+      }
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      .feature-card {
+        background: var(--surface);
+        padding: 1.75rem;
+        transition: background 0.35s;
+        backdrop-filter: blur(10px);
+      }
+      .feature-card:hover,
+      .stat-row:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+      .feature-card:hover {
+        background: var(--bg2);
+      }
+      .feat-num {
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        color: var(--text3);
+        letter-spacing: 0.08em;
+        margin-bottom: 1rem;
+        display: block;
+      }
+      .feat-title {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .feat-body {
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        line-height: 1.8;
+        color: var(--text2);
+      }
+      .feat-icon-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: var(--c-dim);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 1.1rem;
+      }
+
+      /* ── MAP SECTION ─────────────────────────────────────── */
+      .map-section {
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 0 2rem 4rem;
+      }
+      .map-header {
+        margin-bottom: 1.5rem;
+      }
+      .map-header h2 {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.4rem;
+      }
+      .map-header p {
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        color: var(--text2);
+        line-height: 1.7;
+      }
+
+      /* ── SEARCH ───────────────────────────────────────────── */
+      .search-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 0.75rem;
+      }
+      .search-wrap-inner {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+      }
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: var(--text3);
+        font-size: 13px;
+      }
+      #searchInput {
+        width: 100%;
+        padding: 0.6rem 0.9rem 0.6rem 2.2rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        color: var(--text);
+        outline: none;
+        transition:
+          border-color 0.2s,
+          background 0.35s;
+      }
+      #searchInput::placeholder {
+        color: var(--text3);
+      }
+      #searchInput:focus {
+        border-color: var(--c);
+      }
+
+      .filter-select,
+      .btn-reset {
+        padding: 0.6rem 0.9rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        color: var(--text);
+        outline: none;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.35s;
+      }
+      .filter-select:focus,
+      .btn-reset:hover {
+        border-color: var(--c);
+        background: var(--bg2);
+      }
+
+      /* ── SUGGESTIONS ─────────────────────────────────────── */
+      .suggestions {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        z-index: 9999;
+        overflow: hidden;
+        display: none;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        transition: background 0.35s;
+      }
+      .suggestions.show {
+        display: block;
+      }
+      .suggestion-item {
+        padding: 0.6rem 1rem;
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--border2);
+        transition: background 0.15s;
+      }
+      .suggestion-item:last-child {
+        border-bottom: none;
+      }
+      .suggestion-item:hover {
+        background: var(--c-dim2);
+        color: var(--c);
+      }
+      .sug-mag {
+        margin-left: auto;
+        font-size: 11px;
+        background: var(--bg2);
+        border-radius: 4px;
+        padding: 2px 7px;
+        color: var(--text3);
+      }
+
+      /* ── RESULT INFO ─────────────────────────────────────── */
+      .result-info {
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        color: var(--text3);
+        letter-spacing: 0.05em;
+        margin-bottom: 0.65rem;
+        min-height: 16px;
+      }
+      .result-info strong {
+        color: var(--c);
+        font-weight: 400;
+      }
+
+      /* ── MAP ─────────────────────────────────────────────── */
+      #map {
+        width: 100%;
+        height: 440px;
+        border-radius: var(--r-lg);
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+
+      /* ── LEGEND ──────────────────────────────────────────── */
+      .legend {
+        display: flex;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        align-items: center;
+      }
+      .legend-label {
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        color: var(--text3);
+        letter-spacing: 0.07em;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        color: var(--text2);
+      }
+      .legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      /* ── QUOTE ───────────────────────────────────────────── */
+      .quote-section {
+        background: var(--bg2);
+        border-top: 1px solid var(--border);
+        padding: 3rem 2rem;
+        transition: background 0.35s;
+      }
+      .quote-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+      }
+      .quote-bar {
+        width: 3px;
+        background: var(--c);
+        border-radius: 2px;
+        flex-shrink: 0;
+        align-self: stretch;
+        min-height: 60px;
+      }
+      .quote-inner blockquote {
+        font-family: "Playfair Display", serif;
+        font-size: 22px;
+        font-style: italic;
+        line-height: 1.5;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+      }
+      .quote-inner cite {
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        color: var(--text3);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      /* ── FOOTER ──────────────────────────────────────────── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 1.25rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: border-color 0.35s;
+      }
+      .footer-brand {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .footer-copy {
+        font-family: "Poppins", sans-serif;
+        font-size: 11px;
+        color: var(--text3);
+      }
+
+      /* ── LEAFLET DARK ─────────────────────────────────────── */
+      [data-theme="dark"] .leaflet-tile {
+        filter: brightness(0.7) invert(1) contrast(3) hue-rotate(200deg)
+          saturate(0.3) brightness(0.7);
+      }
+      [data-theme="dark"] .leaflet-container {
+        background: #1a1a18;
+      }
+
+      /* ── RESPONSIVE ──────────────────────────────────────── */
+      @media (max-width: 720px) {
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+          padding: 3rem 1.25rem 2rem;
+        }
+        .hero h1 {
+          font-size: 44px;
+        }
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+        nav {
+          padding: 0 1.25rem;
+        }
+        .nav-links {
+          display: none;
+        }
+        .map-section,
+        .features-section {
+          padding-left: 1.25rem;
+          padding-right: 1.25rem;
+        }
+        .quote-inner {
+          flex-direction: column;
+        }
+        footer {
+          flex-direction: column;
+          gap: 0.5rem;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav>
+      <a class="nav-brand" href="/welcome/">
+        <span class="nav-brand-dot"></span>
+        GempaBumi
+      </a>
+      <div class="nav-right">
+        <ul class="nav-links">
+          <li><a href="/welcome/" class="active">Beranda</a></li>
+          <li><a href="/about/">Tentang</a></li>
+        </ul>
+        <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+          <span class="theme-icon theme-icon-sun">☀</span>
+          <span class="theme-icon theme-icon-moon">☽</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-left">
+        <div class="hero-eyebrow">
+          Edukasi Kebencanaan <span>/ Indonesia</span>
+        </div>
+        <h1>Kenali.<br />Pahami.<br /><span class="em">Bersiaplah.</span></h1>
+        <p class="hero-body">
+          Platform edukasi gempa bumi untuk masyarakat Indonesia. Pelajari cara
+          melindungi diri dan keluargamu — sebelum, saat, dan setelah gempa
+          terjadi.
+        </p>
+        <div class="cta-group">
+          <a href="#" class="btn btn-primary">Pelajari Selengkapnya →</a>
+          <a href="#peta" class="btn btn-ghost">Lihat Peta</a>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Gempa Tercatat</div>
+            <div class="stat-val">15 <small>event</small></div>
+          </div>
+          <div class="stat-badge badge-red">7 Hari Terakhir</div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Gempa Terkuat</div>
+            <div class="stat-val">M 5.8 <small>Bitung</small></div>
+          </div>
+          <div class="stat-badge badge-amber">Dirasakan</div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Zona Aktif</div>
+            <div class="stat-val">Sulawesi <small>+ Papua</small></div>
+          </div>
+          <div class="stat-badge badge-teal">Aktif</div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Sumber Data</div>
+            <div
+              class="stat-val"
+              style="font-size: 16px; letter-spacing: -0.01em"
+            >
+              BMKG
+            </div>
+          </div>
+          <div class="stat-badge badge-teal">Resmi</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- FEATURES -->
+    <section class="features-section">
+      <div class="section-eyebrow">Fitur Platform</div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feat-icon-wrap">🔬</div>
+          <span class="feat-num">01 —</span>
+          <div class="feat-title">Edukasi Ilmiah</div>
+          <p class="feat-body">
+            Penjelasan berbasis sains tentang penyebab, proses, dan dampak gempa
+            bumi yang mudah dipahami semua kalangan.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon-wrap">📊</div>
+          <span class="feat-num">02 —</span>
+          <div class="feat-title">Skala &amp; Data</div>
+          <p class="feat-body">
+            Pahami skala kekuatan gempa dan arti angkanya bagi kehidupan
+            sehari-hari dengan visualisasi data terkini.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon-wrap">🛡️</div>
+          <span class="feat-num">03 —</span>
+          <div class="feat-title">Panduan Keselamatan</div>
+          <p class="feat-body">
+            Tips praktis sebelum, saat, dan setelah gempa yang bisa langsung
+            diterapkan oleh seluruh anggota keluarga.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAP -->
+    <section class="map-section" id="peta">
+      <div class="map-header">
+        <div class="section-eyebrow">Peta Interaktif · Sumber BMKG</div>
+        <h2>Data Gempa Bumi Terkini</h2>
+        <p>
+          Data gempa terbaru di Indonesia. Cari berdasarkan wilayah atau filter
+          berdasarkan kekuatan gempa.
+        </p>
+      </div>
+
+      <div class="search-bar">
+        <div class="search-wrap-inner">
+          <span class="search-icon">⌕</span>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Cari wilayah: Bitung, Bengkulu, Jayapura..."
+            autocomplete="off"
+          />
+          <div class="suggestions" id="suggestions"></div>
+        </div>
+        <select class="filter-select" id="magFilter">
+          <option value="">Semua Magnitudo</option>
+          <option value="2">≥ M 2.0</option>
+          <option value="3">≥ M 3.0</option>
+          <option value="4">≥ M 4.0</option>
+          <option value="5">≥ M 5.0</option>
+        </select>
+        <button class="btn-reset" id="btnReset">Reset</button>
+      </div>
+
+      <div class="result-info" id="resultInfo"></div>
+      <div id="map"></div>
+
+      <div class="legend">
+        <span class="legend-label">Magnitudo:</span>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #3b9e6b"></div>
+          &lt; 3.0
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #c48a12"></div>
+          3.0 – 4.9
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #5b6cff"></div>
+          ≥ 5.0
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-brand">GempaBumi</div>
+      <div class="footer-copy">
+        Octaviani Nursalsabila · Edukasi Kebencanaan
+      </div>
+    </footer>
+
+    <script>
+      // ── THEME ─────────────────────────────────────────────
+      const html = document.documentElement;
+      const toggleBtn = document.getElementById("themeToggle");
+      const saved = localStorage.getItem("theme") || "light";
+      html.setAttribute("data-theme", saved);
+
+      toggleBtn.addEventListener("click", () => {
+        const next =
+          html.getAttribute("data-theme") === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        if (tileLayer) {
+          tileLayer.redraw();
+        }
+      });
+
+      // ── GEMPA DATA ─────────────────────────────────────────
+      const gempaData = [
+        {
+          tanggal: "24 Mei 2026",
+          jam: "22:33 WIB",
+          coords: [0.98, 126.15],
+          mag: 4.8,
+          kedalaman: "22 km",
+          wilayah: "Pusat gempa berada di laut 125 km Tenggara Bitung",
+          dirasakan: "II-III Manado, II-III Bitung, II-III Minahasa Utara",
+        },
+        {
+          tanggal: "23 Mei 2026",
+          jam: "19:40 WIB",
+          coords: [-4.67, 102.57],
+          mag: 5.3,
+          kedalaman: "17 km",
+          wilayah:
+            "Pusat gempa berada di laut 45 km barat daya Bengkulu Selatan",
+          dirasakan: "III-IV Bengkulu Selatan, III-IV Kaur, III Kepahiang",
+        },
+        {
+          tanggal: "23 Mei 2026",
+          jam: "00:05 WIB",
+          coords: [-2.29, 140.49],
+          mag: 3.6,
+          kedalaman: "5 km",
+          wilayah: "Pusat gempa berada di laut 34 km Timur Laut Kab. Jayapura",
+          dirasakan: "II Kab. Jayapura",
+        },
+        {
+          tanggal: "22 Mei 2026",
+          jam: "20:39 WIB",
+          coords: [-4.71, 103.1],
+          mag: 3.6,
+          kedalaman: "10 km",
+          wilayah: "Pusat gempa berada di laut 29 km Barat Laut Kaur",
+          dirasakan: "III Kaur, III Muara Sahung, II Muara Dua",
+        },
+        {
+          tanggal: "22 Mei 2026",
+          jam: "20:13 WIB",
+          coords: [-4.61, 122.45],
+          mag: 3.4,
+          kedalaman: "6 km",
+          wilayah: "Pusat gempa berada di laut 21 km Utara Muna Barat",
+          dirasakan: "II-III Muna Barat",
+        },
+        {
+          tanggal: "22 Mei 2026",
+          jam: "13:28 WIB",
+          coords: [4.19, 97.55],
+          mag: 4.4,
+          kedalaman: "10 km",
+          wilayah:
+            "Pusat gempa berada di darat 31 km Timur Laut Kab. Gayo Lues",
+          dirasakan: "III Gayo Lues, III Sentang Blangkejeren",
+        },
+        {
+          tanggal: "22 Mei 2026",
+          jam: "08:05 WIB",
+          coords: [1.07, 126.18],
+          mag: 5.8,
+          kedalaman: "26 km",
+          wilayah: "Pusat gempa berada di laut 124 km tenggara Bitung",
+          dirasakan: "III-IV Batang Dua, II-III Sofifi, III Ternate",
+        },
+        {
+          tanggal: "22 Mei 2026",
+          jam: "07:10 WIB",
+          coords: [-2.32, 140.5],
+          mag: 3.7,
+          kedalaman: "10 km",
+          wilayah: "Pusat gempa berada di laut 31 km timur laut Kab. Jayapura",
+          dirasakan: "II Kota Jayapura, II Kab. Jayapura",
+        },
+        {
+          tanggal: "21 Mei 2026",
+          jam: "11:56 WIB",
+          coords: [-6.87, 106.79],
+          mag: 2.9,
+          kedalaman: "15 km",
+          wilayah: "Pusat gempa berada di darat 16 km Barat Laut Kota Sukabumi",
+          dirasakan: "II-III Ciambar, III Cibadak",
+        },
+        {
+          tanggal: "21 Mei 2026",
+          jam: "04:04 WIB",
+          coords: [-8.34, 108.25],
+          mag: 4.6,
+          kedalaman: "23 km",
+          wilayah: "Pusat gempa berada di laut 76 km selatan Pangandaran",
+          dirasakan: "III Tasikmalaya, III Garut, II-III Ciamis",
+        },
+        {
+          tanggal: "20 Mei 2026",
+          jam: "22:25 WIB",
+          coords: [-5.33, 104.63],
+          mag: 2.3,
+          kedalaman: "5 km",
+          wilayah: "Pusat gempa berada di darat 17 km BaratLaut Tanggamus",
+          dirasakan: "II-III Ulu Belu",
+        },
+        {
+          tanggal: "20 Mei 2026",
+          jam: "20:50 WIB",
+          coords: [-2.44, 120.98],
+          mag: 4.3,
+          kedalaman: "10 km",
+          wilayah: "Pusat gempa berada di darat 25 km Barat Laut Luwu Timur",
+          dirasakan: "III Luwu Timur",
+        },
+        {
+          tanggal: "20 Mei 2026",
+          jam: "17:28 WIB",
+          coords: [-8.09, 119.21],
+          mag: 5.2,
+          kedalaman: "12 km",
+          wilayah: "Pusat gempa berada di laut 65 km Timur Laut Kota Bima",
+          dirasakan: "III Kota Bima, III Kab. Bima, III Kab. Dompu",
+        },
+        {
+          tanggal: "20 Mei 2026",
+          jam: "09:03 WIB",
+          coords: [2.44, 96.2],
+          mag: 4.5,
+          kedalaman: "16 km",
+          wilayah: "Pusat gempa berada di laut 19 km barat Sinabang",
+          dirasakan: "II-III Simeulue",
+        },
+        {
+          tanggal: "20 Mei 2026",
+          jam: "01:51 WIB",
+          coords: [-4.04, 121.96],
+          mag: 2.9,
+          kedalaman: "10 km",
+          wilayah: "Pusat gempa berada di darat 11 km tenggara Kolaka Timur",
+          dirasakan: "III Kolaka Timur",
+        },
+      ];
+
+      function markerColor(mag) {
+        if (mag >= 5.0) return "#5B6CFF";
+        if (mag >= 3.0) return "#C48A12";
+        return "#3B9E6B";
+      }
+
+      function makeIcon(mag, highlighted) {
+        const color = markerColor(mag);
+        const size = highlighted ? 38 : 28;
+        return L.divIcon({
+          html: `<svg width="${size}" height="${size}" viewBox="0 0 64 80" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 2C18.7 2 8 12.7 8 26c0 19.3 24 52 24 52s24-32.7 24-52C56 12.7 45.3 2 32 2z"
+            fill="${color}" stroke="#fff" stroke-width="${highlighted ? 4 : 3}"/>
+          <circle cx="32" cy="26" r="${highlighted ? 10 : 8}" fill="#fff"/>
+        </svg>`,
+          className: "",
+          iconSize: [size, size * 1.25],
+          iconAnchor: [size / 2, size * 1.25],
+          popupAnchor: [0, -size * 1.25 + 8],
+        });
+      }
+
+      var tileLayer;
+      var map = L.map("map").setView([-2.5, 118], 5);
+
+      tileLayer = L.tileLayer(
+        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          maxZoom: 19,
+          attribution:
+            '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        },
+      ).addTo(map);
+
+      var markers = [];
+      var activeIdx = null;
+
+      gempaData.forEach(function (g, i) {
+        var mk = L.marker(g.coords, { icon: makeIcon(g.mag, false) });
+        mk.bindPopup(
+          `<div style="font-family:'JetBrains Mono',monospace;min-width:210px;padding:4px 0;">
+          <div style="font-size:10px;color:#5B6CFF;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;">${g.tanggal}</div>
+          <div style="font-size:18px;font-family: 'Poppins', sans-serif;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;">M ${g.mag.toFixed(1)}</div>
+          <div style="font-size:11px;color:#4A4843;line-height:1.6;margin-bottom:8px;">${g.wilayah}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <span style="font-size:10px;background:#F7F5F0;border-radius:4px;padding:2px 8px;letter-spacing:.04em;">↓ ${g.kedalaman}</span>
+            <span style="font-size:10px;background:#F7F5F0;border-radius:4px;padding:2px 8px;letter-spacing:.04em;">${g.jam}</span>
+          </div>
+          ${g.dirasakan ? `<div style="font-size:10px;color:#8A8880;margin-top:7px;line-height:1.5;">Dirasakan: ${g.dirasakan}</div>` : ""}
+        </div>`,
+        );
+        mk.addTo(map);
+        markers.push(mk);
+      });
+
+      // ── SEARCH LOGIC ───────────────────────────────────────
+      var searchInput = document.getElementById("searchInput");
+      var suggestionsEl = document.getElementById("suggestions");
+      var magFilter = document.getElementById("magFilter");
+      var btnReset = document.getElementById("btnReset");
+      var resultInfo = document.getElementById("resultInfo");
+
+      function getFiltered(q, minMag) {
+        return gempaData
+          .map((g, i) => ({ g, i }))
+          .filter(({ g }) => {
+            const qOk =
+              !q ||
+              g.wilayah.toLowerCase().includes(q.toLowerCase()) ||
+              (g.dirasakan || "").toLowerCase().includes(q.toLowerCase());
+            const mOk = !minMag || g.mag >= parseFloat(minMag);
+            return qOk && mOk;
+          });
+      }
+
+      function cleanWilayah(w) {
+        return w
+          .replace("Pusat gempa berada di laut ", "")
+          .replace("Pusat gempa berada di darat ", "");
+      }
+
+      function updateSuggestions() {
+        const q = searchInput.value.trim();
+        if (!q) {
+          suggestionsEl.classList.remove("show");
+          return;
+        }
+        const results = getFiltered(q, magFilter.value).slice(0, 6);
+        if (!results.length) {
+          suggestionsEl.classList.remove("show");
+          return;
+        }
+        suggestionsEl.innerHTML = results
+          .map(
+            ({ g, i }) =>
+              `<div class="suggestion-item" data-idx="${i}">
+          <span>📍 ${cleanWilayah(g.wilayah)}</span>
+          <span class="sug-mag">M ${g.mag.toFixed(1)}</span>
+        </div>`,
+          )
+          .join("");
+        suggestionsEl.classList.add("show");
+        suggestionsEl.querySelectorAll(".suggestion-item").forEach((el) => {
+          el.addEventListener("click", () => {
+            const idx = parseInt(el.getAttribute("data-idx"));
+            flyToMarker(idx);
+            suggestionsEl.classList.remove("show");
+            searchInput.value = cleanWilayah(gempaData[idx].wilayah);
+          });
+        });
+      }
+
+      function flyToMarker(idx) {
+        if (activeIdx !== null)
+          markers[activeIdx].setIcon(makeIcon(gempaData[activeIdx].mag, false));
+        activeIdx = idx;
+        markers[idx].setIcon(makeIcon(gempaData[idx].mag, true));
+        map.flyTo(gempaData[idx].coords, 9, { duration: 1.2 });
+        setTimeout(() => markers[idx].openPopup(), 1300);
+        resultInfo.innerHTML = `Menampilkan: <strong>${gempaData[idx].wilayah}</strong>`;
+      }
+
+      function applyFilter() {
+        const q = searchInput.value.trim();
+        const results = getFiltered(q, magFilter.value);
+        if (!results.length) {
+          resultInfo.innerHTML = "Tidak ada gempa yang cocok.";
+          return;
+        }
+        if (results.length === 1) {
+          flyToMarker(results[0].i);
+          return;
+        }
+        map.flyToBounds(
+          results.map(({ g }) => g.coords),
+          { padding: [40, 40], duration: 1.2 },
+        );
+        resultInfo.innerHTML = `Menampilkan <strong>${results.length}</strong> gempa`;
+      }
+
+      searchInput.addEventListener("input", updateSuggestions);
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          suggestionsEl.classList.remove("show");
+          applyFilter();
+        }
+      });
+      magFilter.addEventListener("change", () => {
+        if (searchInput.value.trim()) applyFilter();
+      });
+      btnReset.addEventListener("click", () => {
+        searchInput.value = "";
+        magFilter.value = "";
+        suggestionsEl.classList.remove("show");
+        resultInfo.innerHTML = "";
+        if (activeIdx !== null) {
+          markers[activeIdx].setIcon(makeIcon(gempaData[activeIdx].mag, false));
+          activeIdx = null;
+        }
+        map.flyTo([-2.5, 118], 5, { duration: 1 });
+      });
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".search-wrap-inner"))
+          suggestionsEl.classList.remove("show");
+      });
+    </script>
+  </body>
+</html>
